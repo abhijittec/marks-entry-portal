@@ -32,7 +32,9 @@ if check_password():
         st.error(f"Database error: '{FILE_NAME}' not found on the server cluster.")
         st.stop()
         
+    # Read and dynamically recast columns to allow mix-types (Strings + Floats)
     df = pd.read_excel(FILE_NAME, header=None)
+    df = df.astype(object)
 
     st.title("🎓 Project Marks Entry Desk")
     st.markdown("Select a student slot to view data, fill evaluations, and commit updates instantly.")
@@ -61,15 +63,13 @@ if check_password():
     
     # 2. Student Meta Section
     st.subheader("📋 Student Profile")
-    
-    # Let Streamlit handle responsive column layouts automatically
     meta_cols = st.columns([2, 2, 1, 2])
     
     with meta_cols[0]:
         updated_vals[1] = st.text_input(FIELDS[1][0], value=str(df.iloc[row_idx, 1]) if pd.notna(df.iloc[row_idx, 1]) else "")
     with meta_cols[1]:
         updated_vals[2] = st.text_input(FIELDS[2][0], value=str(df.iloc[row_idx, 2]) if pd.notna(df.iloc[row_idx, 2]) else "")
-    with meta_cols[3]:
+    with meta_cols[2]:
         updated_vals[3] = st.text_input(FIELDS[3][0], value=str(df.iloc[row_idx, 3]) if pd.notna(df.iloc[row_idx, 3]) else "")
     with meta_cols[3]:
         updated_vals[4] = st.text_input(FIELDS[4][0], value=str(df.iloc[row_idx, 4]) if pd.notna(df.iloc[row_idx, 4]) else "")
@@ -80,12 +80,14 @@ if check_password():
         with mt_cols[0]:
             st.markdown("**Guide Metrics**")
             for c in [5,6,7,8,10,11,12]:
-                cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                try: cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                except: cur = 0.0
                 updated_vals[c] = st.number_input(f"{FIELDS[c][0]} (Max {FIELDS[c][1]})", 0.0, float(FIELDS[c][1]), cur, step=0.5)
         with mt_cols[1]:
             st.markdown("**Report & Panel Viva Metrics**")
             for c in [14,15,16,18,19,20,21,22]:
-                cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                try: cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                except: cur = 0.0
                 updated_vals[c] = st.number_input(f"{FIELDS[c][0]} (Max {FIELDS[c][1]})", 0.0, float(FIELDS[c][1]), cur, step=0.5)
 
     with st.expander("🏆 Part B: Final Presentation Inputs (Max 300)", expanded=False):
@@ -93,12 +95,14 @@ if check_password():
         with fn_cols[0]:
             st.markdown("**Internal/Industry Evaluators**")
             for c in [25,26,27,28,30,31,33,34,35]:
-                cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                try: cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                except: cur = 0.0
                 updated_vals[c] = st.number_input(f"{FIELDS[c][0]} (Max {FIELDS[c][1]})", 0.0, float(FIELDS[c][1]), cur, step=0.5)
         with fn_cols[1]:
             st.markdown("**External Board & Panel Viva**")
             for c in [37,38,39,41,42,43,44]:
-                cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                try: cur = float(df.iloc[row_idx, c]) if pd.notna(df.iloc[row_idx, c]) else 0.0
+                except: cur = 0.0
                 updated_vals[c] = st.number_input(f"{FIELDS[c][0]} (Max {FIELDS[c][1]})", 0.0, float(FIELDS[c][1]), cur, step=0.5)
 
     # 4. Save and Recalculate Sequence
@@ -107,7 +111,7 @@ if check_password():
         for col, val in updated_vals.items():
             df.iloc[row_idx, col] = val
             
-        # Lambda function for safety checks during calculations
+        # Helper function for safely reading calculations
         f_val = lambda c: float(df.iloc[row_idx, c] if pd.notna(df.iloc[row_idx, c]) else 0)
         
         # Aggregate Mid Term Metrics
