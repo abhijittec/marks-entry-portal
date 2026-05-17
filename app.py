@@ -61,15 +61,17 @@ if check_password():
     
     # 2. Student Meta Section
     st.subheader("📋 Student Profile")
-    meta_cols = st.columns([2, 2, 1, 2]) if not st.experimental_user.get("is_mobile", False) else st.columns(1)
     
-    with meta_cols[0 % len(meta_cols)]:
+    # Let Streamlit handle responsive column layouts automatically
+    meta_cols = st.columns([2, 2, 1, 2])
+    
+    with meta_cols[0]:
         updated_vals[1] = st.text_input(FIELDS[1][0], value=str(df.iloc[row_idx, 1]) if pd.notna(df.iloc[row_idx, 1]) else "")
-    with meta_cols[1 % len(meta_cols)]:
+    with meta_cols[1]:
         updated_vals[2] = st.text_input(FIELDS[2][0], value=str(df.iloc[row_idx, 2]) if pd.notna(df.iloc[row_idx, 2]) else "")
-    with meta_cols[2 % len(meta_cols)]:
+    with meta_cols[3]:
         updated_vals[3] = st.text_input(FIELDS[3][0], value=str(df.iloc[row_idx, 3]) if pd.notna(df.iloc[row_idx, 3]) else "")
-    with meta_cols[3 % len(meta_cols)]:
+    with meta_cols[3]:
         updated_vals[4] = st.text_input(FIELDS[4][0], value=str(df.iloc[row_idx, 4]) if pd.notna(df.iloc[row_idx, 4]) else "")
 
     # 3. Input Panels split up transparently
